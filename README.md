@@ -1,0 +1,2 @@
+# SpringSpecificationBuilder
+Spring Specification Builder
