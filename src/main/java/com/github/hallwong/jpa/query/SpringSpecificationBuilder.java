@@ -18,7 +18,7 @@
 package com.github.hallwong.jpa.query;
 
 import com.github.hallwong.jpa.query.annotation.Restriction;
-import com.github.hallwong.jpa.query.annotation.Restrictions;
+import com.github.hallwong.jpa.query.annotation.QueryRequirement;
 import com.github.hallwong.jpa.query.meta.BuilderMetaKeeper;
 import com.github.hallwong.jpa.query.meta.EntityMetaKeeper;
 import com.github.hallwong.jpa.query.meta.RestrictionMeta;
@@ -40,6 +40,7 @@ public class SpringSpecificationBuilder<T> {
 
     private static final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    @SuppressWarnings("rawtypes")
     private static final Map<Class<? extends SpringSpecificationBuilder>, BuilderMetaKeeper> builderMetaStore = new HashMap<>();
 
     private static final Map<Class<?>, EntityMetaKeeper> entityMetaStore = new HashMap<>();
@@ -65,11 +66,37 @@ public class SpringSpecificationBuilder<T> {
         lock.readLock().lock();
         try {
             RestrictionMeta restriction = meta.getRestriction(field);
-            //FIXME validate
+            Class<?> fieldType;
             FieldKeeper fieldKeeper = new FieldKeeper();
             fieldKeeper.name = field;
             fieldKeeper.operator = restriction.getOperator();
-            fieldKeeper.parameter = params;
+            //judge field type by the given parameter 'params'
+            //根据传入的params判断参数类型
+            switch (params.length) {
+                //some operator doesn't need a parameter
+                //特殊的运算符，如NotNull，不需要参数
+                case 0:
+                    fieldType = null;
+                    fieldKeeper.parameter = null;
+                    break;
+                case 1:
+                    //TODO judge whether collection
+                    fieldType = params[0].getClass();
+                    fieldKeeper.parameter = params[0];
+                    break;
+                default:
+                    fieldType = null;
+                    for (Object param : params) {
+                        if (fieldType == null) {
+                            fieldType = param.getClass();
+                        } else if (fieldType != param.getClass()) {
+                            throw new IllegalArgumentException("params array contains different types");
+                        }
+                    }
+                    fieldKeeper.parameter = params;
+                    break;
+            }
+            fieldKeeper.operator.validateType(fieldType);
             fields.add(fieldKeeper);
         } finally {
             lock.readLock().unlock();
@@ -81,12 +108,12 @@ public class SpringSpecificationBuilder<T> {
         lock.writeLock().lock();
         try {
             BuilderMetaKeeper meta = new BuilderMetaKeeper();
-            Restrictions restrictions = this.getClass().getAnnotation(Restrictions.class);
-            if (restrictions == null) {
+            QueryRequirement queryRequirement = this.getClass().getAnnotation(QueryRequirement.class);
+            if (queryRequirement == null) {
                 throw new IllegalStateException(String.format("class %s is not correctly annotated!", this.getClass().getName()));
             }
-            Restriction[] restrictionArr = restrictions.value();
-            if (restrictionArr.length == 0) {
+            Restriction[] restrictions = queryRequirement.restrictions();
+            if (restrictions.length == 0) {
                 throw new IllegalStateException("restrictions is empty");
             }
             Type genericSuperclass = this.getClass().getGenericSuperclass();
@@ -96,7 +123,7 @@ public class SpringSpecificationBuilder<T> {
             if (entityMeta == null) {
                 entityMeta = readEntityMeta(entityClass);
             }
-            for (Restriction restriction : restrictionArr) {
+            for (Restriction restriction : restrictions) {
                 Class<?> fieldType = entityMeta.getFieldType(restriction.field());
                 restriction.operator().validateType(fieldType);
                 RestrictionMeta rm = new RestrictionMeta();

@@ -26,6 +26,6 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Restrictions {
-    Restriction[] value();
+public @interface QueryRequirement {
+    Restriction[] restrictions();
 }

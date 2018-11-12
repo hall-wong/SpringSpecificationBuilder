@@ -18,10 +18,15 @@
 package com.github.hallwong.jpa.query.annotation;
 
 public enum Operator {
-    Equal {
+
+    Equal,
+    In,
+    NotNull {
         @Override
         public void validateType(Class<?> fieldType) {
-            //allow any type
+            if (fieldType != null) {
+                throw new IllegalArgumentException("you don't need set any restrictions for operator NotNul");
+            }
         }
     },
     Contains {
@@ -41,22 +46,21 @@ public enum Operator {
         public void validateType(Class<?> fieldType) {
             allow(fieldType, CharSequence.class);
         }
-    },
-    In {
-        @Override
-        public void validateType(Class<?> fieldType) {
-            allow(CharSequence.class);
-        }
-    },
-    NotNull;
+    };
+
+    private static final Class<?>[] ALL_ALLOW_TYPES = {CharSequence.class, Number.class, Boolean.class};
 
     public void validateType(Class<?> fieldType) {
-        throw new UnsupportedOperationException();
+        allowAll(fieldType);
     }
 
-    private static void allow(Class<?> fieldType, Class<?>... s) {
-        for (Class<?> s1 : s) {
-            if (s1.isAssignableFrom(fieldType)) {
+    private static void allowAll(Class<?> fieldType) {
+        allow(fieldType, ALL_ALLOW_TYPES);
+    }
+
+    private static void allow(Class<?> fieldType, Class<?>... allowedTypes) {
+        for (Class<?> allowedType : allowedTypes) {
+            if (allowedType.isAssignableFrom(fieldType)) {
                 return;
             }
         }

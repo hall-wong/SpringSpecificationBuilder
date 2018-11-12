@@ -42,6 +42,12 @@ class SpringSpecificationImpl<T> implements Specification<T> {
                 case Equal:
                     restrictions = cb.and(restrictions, cb.equal(root.get(field.name), field.parameter));
                     break;
+                case In:
+                    restrictions = cb.and(restrictions, root.get(field.name).in((Object[]) field.parameter));
+                    break;
+                case NotNull:
+                    restrictions = cb.and(restrictions, cb.isNotNull(root.get(field.name)));
+                    break;
                 case Contains:
                     restrictions = cb.and(restrictions, cb.like(root.get(field.name), "%" + field.parameter + "%"));
                     break;
@@ -50,12 +56,6 @@ class SpringSpecificationImpl<T> implements Specification<T> {
                     break;
                 case EndWith:
                     restrictions = cb.and(restrictions, cb.like(root.get(field.name), "%" + field.parameter));
-                    break;
-                case In:
-                    restrictions = cb.and(restrictions, root.get(field.name).in((Object[]) field.parameter));
-                    break;
-                case NotNull:
-                    restrictions = cb.and(restrictions, cb.isNotNull(root.get(field.name)));
                     break;
             }
         }
