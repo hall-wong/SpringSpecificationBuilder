@@ -27,6 +27,8 @@ import java.util.List;
 
 class SpringSpecificationImpl<T> implements Specification<T> {
 
+    private static final long serialVersionUID = 1L;
+
     private SpringSpecificationBuilder<T> builder;
 
     SpringSpecificationImpl(SpringSpecificationBuilder<T> builder) {

@@ -124,8 +124,6 @@ public class SpringSpecificationBuilder<T> {
                 entityMeta = readEntityMeta(entityClass);
             }
             for (Restriction restriction : restrictions) {
-                Class<?> fieldType = entityMeta.getFieldType(restriction.field());
-                restriction.operator().validateType(fieldType);
                 RestrictionMeta rm = new RestrictionMeta();
                 rm.setOperator(restriction.operator());
                 meta.addRestriction(restriction.field(), rm);

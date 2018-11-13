@@ -25,7 +25,7 @@ public enum Operator {
         @Override
         public void validateType(Class<?> fieldType) {
             if (fieldType != null) {
-                throw new IllegalArgumentException("you don't need set any restrictions for operator NotNul");
+                throw new IllegalArgumentException("you don't need set any restrictions for operator NotNull");
             }
         }
     },
