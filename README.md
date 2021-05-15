@@ -18,7 +18,6 @@ public class MySpecificationBuilder<MyEntity> extends SpringSpecificationBuilder
     }
 }
 ```
-**本人目前（至少在2018年底前）工作较忙，更新不太活跃，本版本只是简单完成了最近基本的功能，未来会推出更多的功能。**
 
 _English part is translate by Google_
 
@@ -40,5 +39,3 @@ public class MySpecificationBuilder<MyEntity> extends SpringSpecificationBuilder
     }
 }
 ```
-
-**I am currently busy (at least until the end of 2018) and the update is not very active. This version simply completes the recent basic functions and will introduce more features in the future.**
